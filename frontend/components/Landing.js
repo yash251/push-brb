@@ -1,0 +1,77 @@
+import Head from "next/head";
+import { useState, useEffect } from "react";
+import { createClient } from 'urql';
+
+export default function Landing({ children }) {
+  const QueryURL = "https://api.studio.thegraph.com/query/39471/brb-subgraph/v0.0.1";
+
+  const query = `{
+    newEventCreateds {
+      id
+      creatorAddress
+      deposit
+      eventDataCID
+      maxCapacity
+    }
+  }`
+
+  const client = createClient({
+    url: QueryURL
+  });
+
+  const [newEventCreateds, setNewEventCreateds] = useState([]);
+
+  useEffect(() => {
+    const getNewEventCreateds = async () => {
+      const { data } = await client.query(query).toPromise();
+      console.log(data);
+      setNewEventCreateds(data.newEventCreateds);
+    }
+    getNewEventCreateds();
+  }, []);
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <Head>
+        <title>RSVP-Web3</title>
+        <meta
+          name="description"
+          content="Find, join, and create virtual events with your web3 frens"
+        />
+      </Head>
+      <section className="py-12">
+        <div className="w-full md:w-8/12 text-left">
+          <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-5xl">
+            <span>Event management with ease.<br/> From invite, to RSVP, to </span>
+            <span className="text-indigo-600">showtime</span>
+          </h1>
+          <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-2xl lg:mx-0">
+            Find, join, and create virtual events with your web3 frens!
+          </p>
+          <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-2xl lg:mx-0">
+            Managing every step of your event—from online RSVP to check-in—has never been easier
+          </p>
+          <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-2xl lg:mx-0">
+            Transform your events with a game-changing RSVP system
+          </p>
+        </div>
+      </section>
+      {/* <section className="py-12">{children}</section> */}
+      <div>
+        <h1>All Events</h1>
+        {newEventCreateds !== null && newEventCreateds.length > 0 && newEventCreateds.map((newEventCreateds) => {
+          return (
+            <div key={newEventCreateds.id}>
+              <p>Event ID: {newEventCreateds.id}</p>
+              <p>Event Creator Address : {newEventCreateds.creatorAddress}</p>
+              <p>Deposit required : {newEventCreateds.deposit} MATIC</p>
+              <p>Event Description : {newEventCreateds.eventDataCID}</p>
+              <p>Maximum Capacity : {newEventCreateds.maxCapacity}</p>
+            </div>
+            
+          );
+        })}
+      </div>
+    </div>
+  );
+}
